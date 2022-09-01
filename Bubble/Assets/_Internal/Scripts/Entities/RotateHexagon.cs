@@ -11,25 +11,38 @@ public class RotateHexagon : MonoBehaviour
     [SerializeField] private Vector3 _targetPosition = Vector3.zero;
     [SerializeField] private LayerMask _layersTargets;
     [SerializeField] private List<Color32> _colors;
+    [SerializeField] private Inputs _inputs;
 
-    public void OnHit(InputValue value)
+
+    private void Awake()
     {
-        HitInput(value.isPressed);
+        _inputs = new Inputs();
+    }
+
+    private void OnEnable()
+    {
+        _inputs.Enable();
+    }
+
+    private void OnDisable()
+    {
+        _inputs.Disable();
     }
 
     private void Start()
     {
         _mainCamera = Camera.main;
+        _inputs.Touch.TouchHit.performed += ctx => HitInput(ctx);
         SetColorBubbles();
     }
 
-    private void HitInput(bool HitState)
+    private void HitInput(InputAction.CallbackContext context)
     {
         if (_canHit)
         {
-            Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+            Ray ray = _mainCamera.ScreenPointToRay(_inputs.Touch.TouchPosition.ReadValue<Vector2>());
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit,_layersTargets) && hit.collider.gameObject == this.gameObject)
+            if (Physics.Raycast(ray, out hit, _layersTargets) && hit.collider.gameObject == this.gameObject)
             {
                 _targetPosition = transform.eulerAngles + new Vector3(0, 60, 0);
                 GameObject[] hexagonsObjects = GameObject.FindGameObjectsWithTag("Hexagon");
@@ -38,10 +51,11 @@ public class RotateHexagon : MonoBehaviour
                     item.GetComponent<RotateHexagon>().DisableHit();
                 }
                 Rotate();
-                
+
             }
         }
     }
+
 
     public void SetColorBubbles()
     {
@@ -58,7 +72,7 @@ public class RotateHexagon : MonoBehaviour
 
     private async void Rotate()
     {
-        transform.Rotate(0, 0, 1);
+        transform.Rotate(0, 0, 1 * (Time.deltaTime * 150));
         await Task.Delay(10);
         if (Utilities.CheckingApproximately(transform.eulerAngles, _targetPosition, 5))
         {

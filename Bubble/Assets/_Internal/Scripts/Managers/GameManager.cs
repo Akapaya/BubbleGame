@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Vector3[][] _positions;
     [SerializeField] private int _numberHexagon = 2;
     [SerializeField] private Save _save;
-
+    [SerializeField] private int _level;
     private Vector3 lastHexagon = Vector3.zero;
 
     public delegate void CheckIfWinHandler();
@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     }
     private void Start()
     {
+        _level = _save.Level;
         _numberHexagon = 2 * _save.Level;
         UIManager.UpdateLevelNumberEvent?.Invoke(_save.Level);
         Create();
@@ -59,7 +60,7 @@ public class GameManager : MonoBehaviour
     private async void CheckIfWin()
     {
         await Task.Delay(1000);
-        if (GameObject.FindWithTag("Sphere") == null)
+        if (GameObject.FindWithTag("Sphere") == null && _save.Level == _level)
         {
             UIManager.WinPanelEvent?.Invoke();
             _save.Level++;
