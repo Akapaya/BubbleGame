@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Threading.Tasks;
 
 public class RotateHexagon : MonoBehaviour
 {
@@ -11,27 +12,9 @@ public class RotateHexagon : MonoBehaviour
     [SerializeField] private LayerMask _layersTargets;
     [SerializeField] private List<Color32> _colors;
 
-    public delegate void DisableHitHandler();
-    public static DisableHitHandler DisableHitEvent;
-
-    public delegate void EnableHitHandler();
-    public static EnableHitHandler EnableHitEvent;
-
     public void OnHit(InputValue value)
     {
         HitInput(value.isPressed);
-    }
-
-    private void OnEnable()
-    {
-        DisableHitEvent += DisableHit;
-        EnableHitEvent += EnableHit;
-    }
-
-    private void OnDisable()
-    {
-        DisableHitEvent -= DisableHit;
-        EnableHitEvent -= EnableHit;
     }
 
     private void Start()
@@ -49,8 +32,13 @@ public class RotateHexagon : MonoBehaviour
             if (Physics.Raycast(ray, out hit,_layersTargets) && hit.collider.gameObject == this.gameObject)
             {
                 _targetPosition = transform.eulerAngles + new Vector3(0, 60, 0);
-                StartCoroutine(Rotate());
-                RotateHexagon.DisableHitEvent?.Invoke();
+                GameObject[] hexagonsObjects = GameObject.FindGameObjectsWithTag("Hexagon");
+                foreach (var item in hexagonsObjects)
+                {
+                    item.GetComponent<RotateHexagon>().DisableHit();
+                }
+                Rotate();
+                
             }
         }
     }
@@ -68,10 +56,10 @@ public class RotateHexagon : MonoBehaviour
         }
     }
 
-    IEnumerator Rotate()
+    private async void Rotate()
     {
         transform.Rotate(0, 0, 1);
-        yield return new WaitForSeconds(0);
+        await Task.Delay(10);
         if (Utilities.CheckingApproximately(transform.eulerAngles, _targetPosition, 5))
         {
             transform.eulerAngles = _targetPosition;
@@ -85,7 +73,14 @@ public class RotateHexagon : MonoBehaviour
         }
         else
         {
-            StartCoroutine(Rotate());
+            Rotate();
+            return;
+        }
+        await Task.Delay(700);
+        GameObject[] hexagonsObjects = GameObject.FindGameObjectsWithTag("Hexagon");
+        foreach (var item in hexagonsObjects)
+        {
+            item.GetComponent<RotateHexagon>().EnableHit();
         }
     }
 

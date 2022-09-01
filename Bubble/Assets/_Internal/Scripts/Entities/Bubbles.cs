@@ -21,10 +21,6 @@ public class Bubbles : MonoBehaviour
                     hit.collider.gameObject.GetComponent<Animator>().Play("AutoDestroy");
                     this.gameObject.GetComponent<Animator>().Play("AutoDestroy");
                 }
-                else
-                {
-                    RotateHexagon.EnableHitEvent?.Invoke();
-                }
             }
         }
     }
@@ -32,7 +28,6 @@ public class Bubbles : MonoBehaviour
     public void Destroy()
     {
         GameManager.CheckIfWinEvent?.Invoke();
-        RotateHexagon.EnableHitEvent?.Invoke();
         Destroy(this.gameObject);
     }
 
